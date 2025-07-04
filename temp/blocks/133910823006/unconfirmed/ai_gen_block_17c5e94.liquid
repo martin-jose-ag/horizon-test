@@ -1,6 +1,610 @@
+{% doc %}
+  @prompt
+    Create a section with cards with a nice hover effect, like a 3d animation or cards move away when cursor is close
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-3d-cards-{{ ai_gen_id }} {
+    display: grid;
+    grid-template-columns: repeat({{ block.settings.columns_desktop }}, 1fr);
+    gap: {{ block.settings.gap }}px;
+    width: 100%;
+    perspective: 1000px;
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-3d-cards-{{ ai_gen_id }} {
+      grid-template-columns: repeat({{ block.settings.columns_mobile }}, 1fr);
+    }
+  }
+
+  .ai-3d-card-wrapper-{{ ai_gen_id }} {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    perspective: 1000px;
+    transform-style: preserve-3d;
+    transition: transform 0.3s ease;
+  }
+
+  .ai-3d-card-{{ ai_gen_id }} {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: {{ block.settings.border_radius }}px;
+    overflow: hidden;
+    background-color: {{ block.settings.card_background }};
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    transform-style: preserve-3d;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;cursor: pointer;
+    padding: {{ block.settings.padding }}px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ai-3d-card-image-container-{{ ai_gen_id }} {
+    width: 100%;
+    aspect-ratio: {{ block.settings.image_aspect_ratio }};
+    overflow: hidden;
+    border-radius: {{ block.settings.border_radius | divided_by: 2 }}px;margin-bottom: 15px;
+  }
+
+  .ai-3d-card-image-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: translateZ(20px);
+    transition: transform 0.3s ease;
+  }
+
+  .ai-3d-card-image-container-{{ ai_gen_id }} svg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: #f4f4f4;
+  }
+
+  .ai-3d-card-content-{{ ai_gen_id }} {
+    transform: translateZ(30px);
+    transition: transform 0.3s ease;}
+
+  .ai-3d-card-title-{{ ai_gen_id }} {
+    font-size: {{ block.settings.title_size }}px;
+    margin-bottom: 10px;
+    color: {{ block.settings.title_color }};
+    font-weight: 600;
+  }
+
+  .ai-3d-card-description-{{ ai_gen_id }} {
+    font-size: {{ block.settings.text_size }}px;
+    color: {{ block.settings.text_color }};
+    margin-bottom: 15px;
+  }
+
+  .ai-3d-card-button-{{ ai_gen_id }} {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: {{ block.settings.button_background }};
+    color: {{ block.settings.button_text_color }};
+    text-decoration: none;
+    border-radius: {{ block.settings.border_radius | divided_by: 2 }}px;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+    border: none;
+    cursor: pointer;
+    transform: translateZ(40px);
+  }
+
+  .ai-3d-card-button-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.button_hover_background }};
+  }
+
+  .ai-3d-card-shine-{{ ai_gen_id }} {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: {{ block.settings.border_radius }}px;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.25) 0%,
+      rgba(255, 255, 255, 0) 60%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+{% endstyle %}
+
+<interactive-cards-{{ ai_gen_id }} 
+  class="ai-3d-cards-{{ ai_gen_id }}"
+  {{ block.shopify_attributes }}
+  data-max-tilt="{{ block.settings.max_tilt }}"
+  data-perspective="{{ block.settings.perspective }}"
+  data-mouse-out-duration="{{ block.settings.mouse_out_duration }}"
+>
+  {% for i in (1..block.settings.card_count) %}
+    {% assign card_title_key = 'card_' | append: i | append: '_title' %}
+    {% assign card_description_key = 'card_' | append: i | append: '_description' %}
+    {% assign card_image_key = 'card_' | append: i | append: '_image' %}
+    {% assign card_button_text_key = 'card_' | append: i | append: '_button_text' %}
+    {% assign card_button_url_key = 'card_' | append: i | append: '_button_url' %}
+    
+    {% assign card_title = block.settings[card_title_key] %}
+    {% assign card_description = block.settings[card_description_key] %}
+    {% assign card_image = block.settings[card_image_key] %}
+    {% assign card_button_text = block.settings[card_button_text_key] %}
+    {% assign card_button_url = block.settings[card_button_url_key] %}
+    
+    {% if card_title != blank or card_description != blank %}
+      <div class="ai-3d-card-wrapper-{{ ai_gen_id }}">
+        <div class="ai-3d-card-{{ ai_gen_id }}">
+          <div class="ai-3d-card-image-container-{{ ai_gen_id }}">
+            {% if card_image != blank %}
+              <img 
+                src="{{ card_image | image_url: width: 600 }}"
+                alt="{{ card_image.alt | escape }}"
+                loading="lazy"
+                width="{{ card_image.width }}"
+                height="{{ card_image.height }}"
+                class="ai-3d-card-image-{{ ai_gen_id }}"
+              >
+            {% else %}
+              {{ 'image' | placeholder_svg_tag }}
+            {% endif %}</div>
+          <div class="ai-3d-card-content-{{ ai_gen_id }}">
+            {% if card_title != blank %}
+              <h3 class="ai-3d-card-title-{{ ai_gen_id }}">{{ card_title }}</h3>
+            {% endif %}
+            {% if card_description != blank %}
+              <div class="ai-3d-card-description-{{ ai_gen_id }}">{{ card_description }}</div>
+            {% endif %}
+            {% if card_button_text != blank and card_button_url != blank %}
+              <a href="{{ card_button_url }}" class="ai-3d-card-button-{{ ai_gen_id }}">
+                {{ card_button_text }}
+              </a>
+            {% endif %}
+          </div>
+          <div class="ai-3d-card-shine-{{ ai_gen_id }}"></div>
+        </div>
+      </div>
+    {% endif %}
+  {% endfor %}
+</interactive-cards-{{ ai_gen_id }}><script>
+  (function() {
+    class InteractiveCards extends HTMLElement {
+      constructor() {
+        super();
+        this.cards = this.querySelectorAll('.ai-3d-card-wrapper-{{ ai_gen_id }}');
+        this.maxTilt = parseFloat(this.getAttribute('data-max-tilt')) || 15;
+        this.perspective = parseFloat(this.getAttribute('data-perspective')) || 1000;
+        this.mouseOutDuration = parseFloat(this.getAttribute('data-mouse-out-duration')) || 300;
+      }
+
+      connectedCallback() {
+        this.setupEventListeners();
+      }
+
+      setupEventListeners() {
+        this.cards.forEach(cardWrapper => {
+          const card = cardWrapper.querySelector('.ai-3d-card-{{ ai_gen_id }}');
+          const shine = card.querySelector('.ai-3d-card-shine-{{ ai_gen_id }}');
+          
+          cardWrapper.addEventListener('mousemove', e => this.handleMouseMove(e, cardWrapper, card, shine));
+          cardWrapper.addEventListener('mouseleave', () => this.handleMouseLeave(cardWrapper, card, shine));
+          cardWrapper.addEventListener('mouseenter', () => this.handleMouseEnter(card, shine));
+        });
+      }
+
+      handleMouseMove(e, cardWrapper, card, shine) {
+        const rect = cardWrapper.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        
+        const percentX = (x - centerX) / centerX;
+        const percentY = (y - centerY) / centerY;
+        
+        const tiltX = this.maxTilt * percentY * -1;
+        const tiltY = this.maxTilt * percentX;
+        
+        card.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+        // Update shine position
+        shine.style.opacity = '0.7';
+        shine.style.transform = `translateX(${percentX * 20}px) translateY(${percentY * 20}px)`;
+      }
+
+      handleMouseLeave(cardWrapper, card, shine) {
+        card.style.transition = `transform ${this.mouseOutDuration}ms ease`;
+        card.style.transform = 'rotateX(0deg) rotateY(0deg)';
+        shine.style.opacity = '0';
+      }
+
+      handleMouseEnter(card, shine) {
+        card.style.transition = 'transform 150ms ease';
+        shine.style.transition = 'opacity 150ms ease, transform 150ms ease';
+      }
+    }
+
+    customElements.define('interactive-cards-{{ ai_gen_id }}', InteractiveCards);
+  })();
+</script>
+
 {% schema %}
- {
-   "name": "AI_Block",
-   "tag": "shopify-ai-generated-block"
- }
+{
+  "name": "3D Interactive Cards",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "card_count",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "default": 3,
+      "label": "Number of cards"
+    },
+    {
+      "type": "select",
+      "id": "columns_desktop",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" },
+        { "value": "3", "label": "3" },
+        { "value": "4", "label": "4" }
+      ],
+      "default": "3",
+      "label": "Columns on desktop"
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ],
+      "default": "1",
+      "label": "Columns on mobile"
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "min": 10,
+      "max": 60,
+      "step": 5,
+      "default": 30,
+      "unit": "px",
+      "label": "Gap between cards"
+    },
+    {
+      "type": "range",
+      "id": "padding",
+      "min": 10,
+      "max": 40,
+      "step": 5,
+      "default": 20,
+      "unit": "px",
+      "label": "Card padding"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "default": 12,
+      "unit": "px",
+      "label": "Border radius"
+    },
+    {
+      "type": "header",
+      "content": "3D Effect Settings"
+    },
+    {
+      "type": "range",
+      "id": "max_tilt",
+      "min": 5,
+      "max": 30,
+      "step": 5,
+      "default": 15,
+      "label": "Maximum tilt angle"
+    },
+    {
+      "type": "range",
+      "id": "perspective",
+      "min": 500,
+      "max": 2000,
+      "step": 100,
+      "default": 1000,
+      "label": "Perspective depth"
+    },
+    {
+      "type": "range",
+      "id": "mouse_out_duration",
+      "min": 100,
+      "max": 1000,
+      "step": 100,
+      "default": 300,
+      "unit": "ms",
+      "label": "Reset animation duration"
+    },
+    {
+      "type": "header",
+      "content": "Image Settings"
+    },
+    {
+      "type": "select",
+      "id": "image_aspect_ratio",
+      "options": [
+        { "value": "1/1", "label": "1:1 (Square)" },
+        { "value": "4/3", "label": "4:3" },
+        { "value": "16/9", "label": "16:9" },
+        { "value": "3/2", "label": "3:2" }
+      ],
+      "default": "16/9",
+      "label": "Image aspect ratio"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Card background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "Button background",
+      "default": "#000f9f"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_background",
+      "label": "Button hover background",
+      "default": "#000000"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "min": 14,
+      "max": 32,
+      "step": 1,
+      "default": 20,
+      "unit": "px",
+      "label": "Title size"
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "default": 14,
+      "unit": "px",
+      "label": "Text size"
+    },
+    {
+      "type": "header",
+      "content": "Card 1"
+    },
+    {
+      "type": "text",
+      "id": "card_1_title",
+      "label": "Title",
+      "default": "Card 1 Title"
+    },
+    {
+      "type": "textarea",
+      "id": "card_1_description",
+      "label": "Description",
+      "default": "This is a description for card 1. Add details about your product or service here."
+    },
+    {
+      "type": "image_picker",
+      "id": "card_1_image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "card_1_button_text",
+      "label": "Button text",
+      "default": "Learn More"
+    },
+    {
+      "type": "url",
+      "id": "card_1_button_url",
+      "label": "Button URL"
+    },
+    {
+      "type": "header",
+      "content": "Card 2"
+    },
+    {
+      "type": "text",
+      "id": "card_2_title",
+      "label": "Title",
+      "default": "Card 2 Title"
+    },
+    {
+      "type": "textarea",
+      "id": "card_2_description",
+      "label": "Description",
+      "default": "This is a description for card 2. Add details about your product or service here."
+    },
+    {
+      "type": "image_picker",
+      "id": "card_2_image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "card_2_button_text",
+      "label": "Button text",
+      "default": "Learn More"
+    },
+    {
+      "type": "url",
+      "id": "card_2_button_url",
+      "label": "Button URL"
+    },
+    {
+      "type": "header",
+      "content": "Card 3"
+    },
+    {
+      "type": "text",
+      "id": "card_3_title",
+      "label": "Title",
+      "default": "Card 3 Title"
+    },
+    {
+      "type": "textarea",
+      "id": "card_3_description",
+      "label": "Description",
+      "default": "This is a description for card 3. Add details about your product or service here."
+    },
+    {
+      "type": "image_picker",
+      "id": "card_3_image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "card_3_button_text",
+      "label": "Button text",
+      "default": "Learn More"
+    },
+    {
+      "type": "url",
+      "id": "card_3_button_url",
+      "label": "Button URL"
+    },
+    {
+      "type": "header",
+      "content": "Card 4"
+    },
+    {
+      "type": "text",
+      "id": "card_4_title",
+      "label": "Title"
+    },
+    {
+      "type": "textarea",
+      "id": "card_4_description",
+      "label": "Description"
+    },
+    {
+      "type": "image_picker",
+      "id": "card_4_image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "card_4_button_text",
+      "label": "Button text"
+    },
+    {
+      "type": "url",
+      "id": "card_4_button_url",
+      "label": "Button URL"
+    },
+    {
+      "type": "header",
+      "content": "Card 5"
+    },
+    {
+      "type": "text",
+      "id": "card_5_title",
+      "label": "Title"
+    },
+    {
+      "type": "textarea",
+      "id": "card_5_description",
+      "label": "Description"
+    },
+    {
+      "type": "image_picker",
+      "id": "card_5_image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "card_5_button_text",
+      "label": "Button text"
+    },
+    {
+      "type": "url",
+      "id": "card_5_button_url",
+      "label": "Button URL"
+    },
+    {
+      "type": "header",
+      "content": "Card 6"
+    },
+    {
+      "type": "text",
+      "id": "card_6_title",
+      "label": "Title"
+    },
+    {
+      "type": "textarea",
+      "id": "card_6_description",
+      "label": "Description"
+    },
+    {
+      "type": "image_picker",
+      "id": "card_6_image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "card_6_button_text",
+      "label": "Button text"
+    },
+    {
+      "type": "url",
+      "id": "card_6_button_url",
+      "label": "Button URL"
+    }
+  ],
+  "presets": [
+    {
+      "name": "3D Interactive Cards"
+    }
+  ]
+}
 {% endschema %}
