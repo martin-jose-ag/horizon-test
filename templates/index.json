@@ -480,10 +480,14 @@
       ],
       "name": "t:names.collections_editorial",
       "settings": {
-        "collection_list": [],
+        "collection_list": [
+          "automated-collection",
+          "frontpage",
+          "hydrogen"
+        ],
         "layout_type": "carousel",
         "carousel_on_mobile": false,
-        "columns": 3,
+        "columns": 2,
         "mobile_columns": "2",
         "columns_gap": 8,
         "bento_gap": 8,
