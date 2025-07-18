@@ -485,7 +485,7 @@
           "frontpage",
           "hydrogen"
         ],
-        "layout_type": "carousel",
+        "layout_type": "editorial",
         "carousel_on_mobile": false,
         "columns": 2,
         "mobile_columns": "2",
@@ -496,7 +496,7 @@
         "icons_style": "arrow",
         "icons_shape": "none",
         "section_width": "page-width",
-        "gap": 64,
+        "gap": 24,
         "color_scheme": "",
         "padding-block-start": 48,
         "padding-block-end": 48
